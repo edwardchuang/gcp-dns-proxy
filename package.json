@@ -1,0 +1,21 @@
+{
+  "name"           : "gcp-dns-proxy",
+  "main"           : "./dns.js",
+  "author"         : "Edward Chuang <edwardchuang@gmail.com>",
+  "description"    : "A DNS proxy which resolves addresses of GCE instances",
+  "version"        : "0.0.1",
+  "license"	   : "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edwardchuang/gcp-dns-proxy.git"
+  },
+  "homepage": "http://github.com/edwardchuang/gcp-dns-proxy",
+  "engines": {
+    "node": ">= 0.12.0"
+  },
+  "dependencies"   : {
+    "native-dns" : "*",
+    "google-cloud" : "~0.41.2"
+  }
+}
+
