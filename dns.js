@@ -13,7 +13,7 @@ var util = require('util');
 var gcp = require('./gcp');
 var server = dns.createServer();
 
-exports.serial = new Date().getTime(); /* serial number for this runtime */
+exports.serial = new Date().getTime() / 1000 | 0; /* serial number for this runtime */
     
 // DNS query types
 var A = 1;
@@ -25,7 +25,7 @@ var MX = 15;
 var TXT = 16;
 
 server.on('request', function(request, response) {
-  if ([A].indexOf(request.question[0].type) == -1) {
+  if ([A, SOA].indexOf(request.question[0].type) == -1) {
     response.send();
     return;
   }
@@ -42,6 +42,24 @@ server.on('request', function(request, response) {
   var project = _s[1];
   var isInternal = (3 <= _s.length && 'i' == _s[2].toLowerCase());
   
+  if (SOA == request.question[0].type) {
+    var name = _s.slice((isInternal) ? 3 : 2).join('.');
+    response.answer.push(dns.SOA({
+      'name': name,
+      'type': SOA,
+      'primary': config['primary_ns'],
+      'admin': config['soa_admin'],
+      'serial': exports.serial,
+      'ttl': config["default_ttl"],
+      'refresh': 900,
+      'retry': 900,
+      'expiration': 1800,
+      'minimum': 60
+    }));
+    response.send();
+    return;
+  }
+
   gcp.getInstances(project, function(ret) {
     if (0 == ret.length) {
       console.log("empty result.");
