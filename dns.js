@@ -25,11 +25,13 @@ var MX = 15;
 var TXT = 16;
 
 server.on('request', function(request, response) {
+  console.log(util.format("[%s] %s:%s Query: %s Type: %s",Date(), request.address.address, request.address.port, request.question[0].name, request.question[0].type))
+
   if ([A, SOA].indexOf(request.question[0].type) == -1) {
     response.send();
     return;
   }
-  
+
   var domain = request.question[0].name;
   
   /* foramt: <instance name>.<project id or alias>.<type>.foo.dont.care */
