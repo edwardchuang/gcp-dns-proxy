@@ -62,10 +62,10 @@ server.on('request', function(request, response) {
     return;
   }
 
-  gcp.getInstances(project, function(ret) {
+  var GCP = new gcp(project);
+  GCP.getInstances(function(ret) {
     if (0 == ret.length) {
       console.log("empty result.");
-      response.send();
       return;
     }
     var result = ret.filter(function (o) { return (o.name.toUpperCase() == hostname.toUpperCase()) });
