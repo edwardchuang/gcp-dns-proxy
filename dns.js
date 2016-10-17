@@ -39,16 +39,21 @@ server.on('request', function(request, response) {
   /* type: i = internal, * (else) = external
    */
   var _s = domain.split(".");
-  console.log(_s);
-  
   var hostname = _s[0];
   var project = _s[1];
   var isInternal = (3 <= _s.length && 'i' == _s[2].toLowerCase());
-  
+  var requestDomain = _s.slice((isInternal) ? 3 : 2).join('.');
+  var isLegit = config["domains"].indexOf(requestDomain);
+
+  if (-1 == isLegit && 0 != config['domains'].length) {
+    /* discard for non hosting domain */
+    response.send();
+    return;
+  }
+
   if (SOA == request.question[0].type) {
-    var name = _s.slice((isInternal) ? 3 : 2).join('.');
     response.answer.push(dns.SOA({
-      'name': name,
+      'name': requestDomain,
       'type': SOA,
       'primary': config['primary_ns'],
       'admin': config['soa_admin'],
@@ -64,6 +69,11 @@ server.on('request', function(request, response) {
   }
 
   var GCP = new gcp(project);
+  if (true == GCP.error) { // error on initializing
+    response.send();
+    return;
+  }
+
   GCP.getInstances(function(ret) {
     if (0 == ret.length) {
       console.log("empty result.");

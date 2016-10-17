@@ -9,9 +9,11 @@ class GCP {
   constructor(project) {
     var gcloud = require('google-cloud');
     var current = projects.filter(function (o) { return (o.project == project || -1 != o.alias.indexOf(project)); });
-
+    this.error = false;
+    
     if (0 == current.length) {
       console.log('project id or alias: \'' + project + '\' not found');
+      this.error = true;
       return false;
     }
     this.gce = gcloud.compute({
