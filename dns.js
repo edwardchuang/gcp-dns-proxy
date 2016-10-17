@@ -23,11 +23,12 @@ var SOA = 6;
 var PTR = 12;
 var MX = 15;
 var TXT = 16;
+var ANY = 255;
 
 server.on('request', function(request, response) {
   console.log(util.format("[%s] %s:%s Query: %s Type: %s",Date(), request.address.address, request.address.port, request.question[0].name, request.question[0].type))
 
-  if ([A, SOA].indexOf(request.question[0].type) == -1) {
+  if ([A, SOA, ANY].indexOf(request.question[0].type) == -1) {
     response.send();
     return;
   }
