@@ -57,3 +57,10 @@ $ kubectl expost -f gcp-dns-proxy.yaml --type=LoadBalancer
 ~~~~bash
 $ kubectl get service gcp-dns-proxy
 ~~~~
+
+(create "secret" with your service account json files)
+
+~~~~bash
+$ kubectl create secret generic gcp-secret --from-file=<json1> --from-file=<json2> ...
+~~~~
+
