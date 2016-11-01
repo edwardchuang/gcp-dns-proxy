@@ -42,7 +42,7 @@ server.on('request', function(request, response) {
   var hostname = _s[0];
   var project = _s[1];
   var isInternal = (3 <= _s.length && 'i' == _s[2].toLowerCase());
-  var requestDomain = _s.slice((isInternal) ? 3 : 2).join('.');
+  var requestDomain = _s.slice((isInternal) ? -2 : -3).join('.');
   var isLegit = config["domains"].indexOf(requestDomain);
 
   if (-1 == isLegit && 0 != config['domains'].length) {
