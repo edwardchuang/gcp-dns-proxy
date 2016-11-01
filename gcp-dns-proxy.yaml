@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gcp-dns-proxy
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: dns-proxy
+    spec:
+      containers:
+      - name: dns-proxy
+        image: asia.gcr.io/gcp-taiwan/gcp-dns-proxy:latest
+        ports:
+        - containerPort: 53
+          protocol: UDP
+        volumeMounts:
+          - name: secret-volume
+            mountPath: /tmp/secret
+            readOnly: true
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: gcp-secret
