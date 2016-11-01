@@ -36,3 +36,31 @@ $ sudo node dns
 ~~~~
 
 Note: you can use pm2 (http://pm2.io) for managing this application as well as manage startup on boot.
+
+# GKE (Google Container Engine) user
+
+You can simply deploy to your GKE cluster by
+~~~~bash
+$ docker build -t asia.gcr.io/<your project id>/gcp-dns-proxy
+$ gcloud docker push asia.gcr.io/<your project id>/gcp-dns-proxy
+~~~~
+
+(edit gcp-dns-proxy.yaml with proper setting fits your environment)
+
+~~~~bash
+$ kubectl create -f gcp-dns-proxy.yaml
+$ kubectl expost -f gcp-dns-proxy.yaml --type=LoadBalancer
+~~~~
+
+(then get the external ip)
+
+~~~~bash
+$ kubectl get service gcp-dns-proxy
+~~~~
+
+(create "secret" with your service account json files)
+
+~~~~bash
+$ kubectl create secret generic gcp-secret --from-file=<json1> --from-file=<json2> ...
+~~~~
+
