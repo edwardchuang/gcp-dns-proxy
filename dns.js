@@ -28,7 +28,7 @@ var ANY = 255;
 server.on('request', function(request, response) {
   console.log(util.format("[%s] %s:%s Query: %s Type: %s",Date(), request.address.address, request.address.port, request.question[0].name, request.question[0].type))
 
-  if ([A, SOA, ANY].indexOf(request.question[0].type) == -1) {
+  if ([A, NS, SOA, ANY].indexOf(request.question[0].type) == -1) {
     response.send();
     return;
   }
@@ -64,6 +64,13 @@ server.on('request', function(request, response) {
       'expiration': 1800,
       'minimum': 60
     }));
+    response.send();
+    return;
+  } else if (NS == request.question[0].type) {
+    response.answer.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
+    config['secondary_ns'].forEach(function(v, i) {
+      response.answer.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': v }));
+    });
     response.send();
     return;
   }
