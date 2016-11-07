@@ -11,7 +11,8 @@ include('config.js');
 var dns = require('native-dns');
 var util = require('util');
 var gcp = require('./gcp');
-var server = dns.createServer();
+var udpServer = dns.createUDPServer();
+var tcpServer = dns.createTCPServer();
 
 exports.serial = new Date().getTime() / 1000 | 0; /* serial number for this runtime */
     
@@ -25,7 +26,7 @@ var MX = 15;
 var TXT = 16;
 var ANY = 255;
 
-server.on('request', function(request, response) {
+function processQueries(request, response) {
   console.log(util.format("[%s] %s:%s Query: %s Type: %s",Date(), request.address.address, request.address.port, request.question[0].name, request.question[0].type))
 
   if ([A, NS, SOA, ANY].indexOf(request.question[0].type) == -1) {
@@ -123,12 +124,12 @@ server.on('request', function(request, response) {
     response.send();
     console.log(record);
   });
-  
-});
+}
 
-server.on('error', function (err, buff, req, res) {
-  console.log(err.stack);
-});
+udpServer.on('request', processQueries);
+tcpServer.on('request', processQueries);
+udpServer.on('error', function (err, buff, req, res) { console.log(err.stack); });
+tcpServer.on('error', function (err, buff, req, res) { console.log(err.stack); });
 
 console.log('Listening on '+53);
 console.log('Serial: '+exports.serial);
@@ -136,4 +137,5 @@ if (!process.getuid || 0 != process.getuid()) {
   console.log('You need root permission to bind on port 53');
   return;
 }
-server.serve(53);
+udpServer.serve(53);
+tcpServer.serve(53);
