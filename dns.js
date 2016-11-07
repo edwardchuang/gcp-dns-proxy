@@ -44,6 +44,7 @@ server.on('request', function(request, response) {
   var isInternal = (3 <= _s.length && 'i' == _s[2].toLowerCase());
   var requestDomain = _s.slice((isInternal) ? -2 : -3).join('.');
   var isLegit = config["domains"].indexOf(requestDomain);
+  var isRootLookup = config["domains"].indexOf(domain.toLowerCase());
 
   if (-1 == isLegit && 0 != config['domains'].length) {
     /* discard for non hosting domain */
@@ -51,10 +52,24 @@ server.on('request', function(request, response) {
     return;
   }
 
-  if (NS == request.question[0].type) {
-    response.answer.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
+  response.additional.push(dns.A({'name': config['primary_ns'], 'ttl': config["default_ttl"], 'address': config['primary_ip'] }));
+  config['secondary_ip'].forEach(function(v, i) {
+    response.additional.push(dns.A({ 'name': config['secondary_ns'][i], 'ttl': config["default_ttl"], 'address': v }));
+  });
+
+  if (-1 != isRootLookup && -1 != isLegit && A == request.question[0].type) {
+    response.authority.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
     config['secondary_ns'].forEach(function(v, i) {
-      response.answer.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': v }));
+      response.authority.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': v }));
+    });
+    response.send();
+    return;
+  }
+
+  if (NS == request.question[0].type) {
+    response.answer.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
+    config['secondary_ns'].forEach(function(v, i) {
+      response.answer.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': v }));
     });
     response.send();
     return;
@@ -74,11 +89,10 @@ server.on('request', function(request, response) {
       'minimum': 60
     }));
 
-    response.authority.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
+    response.authority.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
     config['secondary_ns'].forEach(function(v, i) {
-      response.authority.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': v }));
+      response.authority.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': v }));
     });
-
     response.send();
     return;
   }
@@ -107,9 +121,9 @@ server.on('request', function(request, response) {
       record.address = result[0].publicIP;
     }
     response.answer.push(dns.A(record));
-    response.authority.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
+    response.authority.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
     config['secondary_ns'].forEach(function(v, i) {
-      response.authority.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': v }));
+      response.authority.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': v }));
     });
     response.send();
     console.log(record);
