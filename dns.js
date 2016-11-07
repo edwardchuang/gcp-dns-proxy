@@ -67,9 +67,9 @@ server.on('request', function(request, response) {
   }
 
   if (NS == request.question[0].type) {
-    response.answer.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
+    response.authority.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
     config['secondary_ns'].forEach(function(v, i) {
-      response.answer.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': v }));
+      response.authority.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': v }));
     });
     response.send();
     return;
