@@ -49,7 +49,7 @@ $ gcloud docker push gcr.io/<your project id>/gcp-dns-proxy
 
 ~~~~bash
 $ kubectl create -f gcp-dns-proxy.yaml
-$ kubectl expost -f gcp-dns-proxy.yaml --type=LoadBalancer
+$ kubectl expose -f gcp-dns-proxy.yaml --type=LoadBalancer
 ~~~~
 
 (then get the external ip)
