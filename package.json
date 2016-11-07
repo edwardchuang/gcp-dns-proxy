@@ -15,7 +15,8 @@
   },
   "dependencies"   : {
     "native-dns" : "*",
-    "google-cloud" : "~0.41.2"
+    "google-cloud" : "~0.41.2",
+    "async": ">=2.1.2"
   }
 }
 

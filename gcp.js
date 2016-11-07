@@ -5,6 +5,8 @@
  */
 
 "use strict";
+var async = require('async');
+
 class GCP {
   constructor(project) {
     var gcloud = require('google-cloud');
@@ -25,21 +27,24 @@ class GCP {
   getInstances(resultcallback) {
     var results = [];
     this.gce.getVMs(function(err, vms) {
-      if (null == vms || 0 == vms.length) {
-        return;
-      }
-      for(var i = 0 ; i < vms.length ; i++) {
-        var key = vms[i];
+      async.eachSeries(vms, function(key, doneOfEach){
         if ('RUNNING' == key.metadata.status) {
           results.push({'name': key.name, 'privateIP': key.metadata.networkInterfaces[0].networkIP, 'publicIP': key.metadata.networkInterfaces[0].accessConfigs[0].natIP, 'TTL': config["default_ttl"]});
         }
-      }
+        return doneOfEach(null);
+      }, function(err, rs) {
+        if (!err) {
+          resultcallback(results);
+        } else {
+          console.log(err);
+        }
+      });
     });
 
     this.gce.getVMs()
       .on('error', console.error)
       .on('data', function(vm) { /* intentionally empty function */ })
-      .on('end', function() { resultcallback(results); });
+      .on('end', function() { /* intentionally empty function */});
   }
 }
 
