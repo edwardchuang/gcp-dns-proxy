@@ -103,22 +103,17 @@ server.on('request', function(request, response) {
     return;
   }
 
-  GCP.getInstances(function(ret) {
+  GCP.getInstances(hostname, function(ret) {
     if (0 == ret.length) {
       console.log("empty result.");
       return;
     }
-    var result = ret.filter(function (o) { return (o.name.toUpperCase() == hostname.toUpperCase()) });
-    if (null == result) {
-      console.log(hostname + " (" + domain + ") not match any.");
-      response.send();
-      return;
-    }
-    var record = {'name': domain, 'ttl': result[0].TTL, 'address': ''};
+    // forced to one address for search result
+    var record = {'name': domain, 'ttl': ret[0].TTL, 'address': ''};
     if (true == isInternal) {
-      record.address = result[0].privateIP;
+      record.address = ret[0].privateIP;
     } else {
-      record.address = result[0].publicIP;
+      record.address = ret[0].publicIP;
     }
     response.answer.push(dns.A(record));
     response.authority.push(dns.NS({ 'name': requestDomain, 'type': NS, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));

@@ -6,6 +6,7 @@
 
 "use strict";
 var async = require('async');
+var util = require('util');
 
 class GCP {
   constructor(project) {
@@ -24,9 +25,10 @@ class GCP {
     });
   }
 
-  getInstances(resultcallback) {
+  getInstances(keyword, resultcallback) {
+    var filter = util.format('(name eq %s*) (status eq RUNNING)', keyword)
     var results = [];
-    this.gce.getVMs(function(err, vms) {
+    this.gce.getVMs({'filter': filter}, function(err, vms) {
       async.eachSeries(vms, function(key, doneOfEach){
         if ('RUNNING' == key.metadata.status) {
           results.push({'name': key.name, 'privateIP': key.metadata.networkInterfaces[0].networkIP, 'publicIP': key.metadata.networkInterfaces[0].accessConfigs[0].natIP, 'TTL': config["default_ttl"]});
