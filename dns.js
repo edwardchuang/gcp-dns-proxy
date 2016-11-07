@@ -51,8 +51,17 @@ server.on('request', function(request, response) {
     return;
   }
 
+  if (NS == request.question[0].type) {
+    response.answer.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
+    config['secondary_ns'].forEach(function(v, i) {
+      response.answer.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': v }));
+    });
+    response.send();
+    return;
+  }
+
   if (SOA == request.question[0].type) {
-    response.authority.push(dns.SOA({
+    response.answer.push(dns.SOA({
       'name': requestDomain,
       'type': SOA,
       'primary': config['primary_ns'],
@@ -64,13 +73,12 @@ server.on('request', function(request, response) {
       'expiration': 1800,
       'minimum': 60
     }));
-    response.send();
-    return;
-  } else if (NS == request.question[0].type) {
+
     response.authority.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
     config['secondary_ns'].forEach(function(v, i) {
       response.authority.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': v }));
     });
+
     response.send();
     return;
   }
@@ -99,6 +107,10 @@ server.on('request', function(request, response) {
       record.address = result[0].publicIP;
     }
     response.answer.push(dns.A(record));
+    response.authority.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': config['primary_ns'] }));
+    config['secondary_ns'].forEach(function(v, i) {
+      response.authority.push(dns.NS({ 'name': requestDomain, 'type': SOA, 'ttl': config["default_ttl"], 'data': v }));
+    });
     response.send();
     console.log(record);
   });
