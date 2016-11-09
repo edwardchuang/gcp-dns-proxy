@@ -135,7 +135,7 @@ console.log('Listening on '+53);
 console.log('Serial: '+exports.serial);
 if (!process.getuid || 0 != process.getuid()) {
   console.log('You need root permission to bind on port 53');
-  return;
+  sys.exit(0);
 }
 udpServer.serve(53);
 tcpServer.serve(53);
